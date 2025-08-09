@@ -24,10 +24,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut parser = ais::AisParser::new();
     for line in std::io::stdin().lines() {
         let line = line?;
-        match parser.parse(line.as_bytes(), true)? {
-            ais::AisFragments::Complete(c) => {
+        match parser.parse(line.as_bytes(), true) {
+            Ok(ais::AisFragments::Complete(c)) => {
                 if !args.quiet {
-                   eprintln!("{c:#?}");
+                    eprintln!("{c:#?}");
                 }
                 if c.is_fragment() {
                     for p in partial.drain(0..) {
@@ -36,8 +36,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 println!("{line}");
             }
-            ais::AisFragments::Incomplete(_) => {
+            Ok(ais::AisFragments::Incomplete(_)) => {
                 partial.push(line);
+            }
+            Err(e) => {
+                // Log error and reset parser
+                log::error!("{e}");
+                parser = Default::default();
             }
         }
     }
