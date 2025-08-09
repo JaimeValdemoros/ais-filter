@@ -16,8 +16,8 @@ struct Cli {
         value_parser = duration_range_value_parse!(min: 1s, max: 1h)
     )]
     sample: Option<DurationHuman>,
-    #[arg(short, long, default_value_t = false)]
-    quiet: bool,
+    #[command(flatten)]
+    verbosity: clap_verbosity_flag::Verbosity,
 }
 
 struct Sample {
@@ -47,8 +47,10 @@ impl Sample {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env_logger::init();
     let args = Cli::parse();
+    env_logger::Builder::new()
+        .filter_level(args.verbosity.log_level_filter())
+        .init();
 
     let mut sample_cfg = args.sample.as_ref().map(Sample::new);
 
