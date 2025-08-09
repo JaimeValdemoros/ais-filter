@@ -1,10 +1,10 @@
+use std::collections::HashSet;
 use std::time::{Duration, Instant};
 
 use ais::sentence::{AisFragments, AisSentence};
 use clap::Parser;
 use clap_duration::duration_range_value_parse;
 use duration_human::{DurationHuman, DurationHumanValidator};
-use fastbloom::BloomFilter;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -21,7 +21,7 @@ struct Cli {
 
 struct Sample {
     duration: Duration,
-    filter: BloomFilter,
+    filter: HashSet<Vec<u8>>,
     next_tick: Instant,
 }
 
@@ -30,17 +30,18 @@ impl Sample {
         let duration = duration.into();
         Sample {
             duration,
-            filter: BloomFilter::with_num_bits(1024).expected_items(128),
+            filter: Default::default() ,
             next_tick: Instant::now() + duration,
         }
     }
 
-    fn check(&mut self, sentence: &AisSentence) -> bool {
+    fn check(&mut self, sentence: AisSentence) -> bool {
         if self.next_tick < Instant::now() {
+            log::debug!("Resetting sample filter");
             self.filter.clear();
             self.next_tick += self.duration;
         }
-        self.filter.insert(&sentence.data)
+        !self.filter.insert(sentence.data)
     }
 }
 
@@ -57,15 +58,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let line = line?;
         match parser.parse(line.as_bytes(), true) {
             Ok(AisFragments::Complete(c)) => {
-                if sample_cfg.as_mut().map_or(false, |s| s.check(&c)) {
-                    log::debug!("Got duplicate message: {c:?}");
+                log::debug!("{c:?}");
+                let is_fragment = c.is_fragment();
+                if sample_cfg.as_mut().map_or(false, |s| s.check(c)) {
+                    log::debug!("Duplicate message, skipping");
                     partial.clear();
                     continue;
                 }
-                if !args.quiet {
-                    eprintln!("{c:#?}");
-                }
-                if c.is_fragment() {
+                if is_fragment {
                     for p in partial.drain(0..) {
                         println!("{p}");
                     }
