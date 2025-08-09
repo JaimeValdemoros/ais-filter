@@ -20,14 +20,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
     log::debug!("{:?}", args.sample);
 
+    let mut partial: Vec<String> = vec![];
     let mut parser = ais::AisParser::new();
     for line in std::io::stdin().lines() {
         let line = line?;
-        let parsed = parser.parse(line.as_bytes(), true)?;
-        if !args.quiet {
-            eprintln!("{parsed:#?}");
+        match parser.parse(line.as_bytes(), true)? {
+            ais::AisFragments::Complete(c) => {
+                if !args.quiet {
+                   eprintln!("{c:#?}");
+                }
+                if c.is_fragment() {
+                    for p in partial.drain(0..) {
+                        println!("{p}");
+                    }
+                }
+                println!("{line}");
+            }
+            ais::AisFragments::Incomplete(_) => {
+                partial.push(line);
+            }
         }
-        println!("{line}");
     }
 
     Ok(())
