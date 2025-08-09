@@ -18,6 +18,8 @@ struct Cli {
     sample: Option<DurationHuman>,
     #[command(flatten)]
     verbosity: clap_verbosity_flag::Verbosity,
+    #[arg(short, long, default_value = "false")]
+    decode: bool,
 }
 
 struct Sample {
@@ -65,7 +67,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if handle.read_line(&mut line)? == 0 {
             break;
         }
-        match parser.parse(line.as_bytes(), false) {
+        match parser.parse(line.as_bytes(), args.decode) {
             Ok(AisFragments::Complete(c)) => {
                 log::debug!("{c:?}");
                 let is_fragment = c.is_fragment();
