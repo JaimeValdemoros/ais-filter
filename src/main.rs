@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for line in std::io::stdin().lines() {
         let line = line?;
-        match parser.parse(line.as_bytes(), true) {
+        match parser.parse(line.as_bytes(), false) {
             Ok(AisFragments::Complete(c)) => {
                 log::debug!("{c:?}");
                 let is_fragment = c.is_fragment();
@@ -77,8 +77,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             Err(e) => {
                 // Log error and reset parser
-                log::error!("{e}");
+                log::error!("{line} -> {e}");
                 parser = Default::default();
+                partial.clear();
             }
         }
     }
