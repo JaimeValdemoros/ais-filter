@@ -6,3 +6,5 @@ edition = "2024"
 [dependencies]
 ais = "0.12.0"
 clap = { version = "4.5.43", features = ["derive"] }
+clap-duration = "0.1.11"
+duration-human = "0.1.10"

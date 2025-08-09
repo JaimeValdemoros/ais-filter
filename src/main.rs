@@ -1,10 +1,16 @@
 use clap::Parser;
+use clap_duration::duration_range_value_parse;
+use duration_human::{DurationHuman, DurationHumanValidator};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-   #[arg(short, long)]
-    sample: Option<String>
+   #[arg(
+        short,
+        long,
+        value_parser = duration_range_value_parse!(min: 1s, max: 1h)
+    )]
+    sample: Option<DurationHuman>
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
