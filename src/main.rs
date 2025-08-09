@@ -14,7 +14,9 @@ struct Cli {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let Cli { sample: _sample } = Cli::parse();
+    env_logger::init();
+    let args = Cli::parse();
+    log::debug!("{:?}", args.sample);
 
     let mut parser = ais::AisParser::new();
     for line in std::io::stdin().lines() {
