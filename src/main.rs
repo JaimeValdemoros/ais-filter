@@ -5,12 +5,14 @@ use duration_human::{DurationHuman, DurationHumanValidator};
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-   #[arg(
+    #[arg(
         short,
         long,
         value_parser = duration_range_value_parse!(min: 1s, max: 1h)
     )]
-    sample: Option<DurationHuman>
+    sample: Option<DurationHuman>,
+    #[arg(short, long, default_value_t = false)]
+    quiet: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -22,7 +24,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for line in std::io::stdin().lines() {
         let line = line?;
         let parsed = parser.parse(line.as_bytes(), true)?;
-        eprintln!("{parsed:#?}");
+        if !args.quiet {
+            eprintln!("{parsed:#?}");
+        }
         println!("{line}");
     }
 
