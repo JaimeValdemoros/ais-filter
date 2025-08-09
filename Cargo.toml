@@ -9,4 +9,5 @@ clap = { version = "4.5.43", features = ["derive"] }
 clap-duration = "0.1.11"
 duration-human = "0.1.10"
 env_logger = "0.11.8"
+fastbloom = "0.14.0"
 log = "0.4.27"
