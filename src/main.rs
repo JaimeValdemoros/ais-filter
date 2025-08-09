@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::io::BufRead;
 use std::time::{Duration, Instant};
 
 use ais::sentence::{AisFragments, AisSentence};
@@ -30,7 +31,7 @@ impl Sample {
         let duration = duration.into();
         Sample {
             duration,
-            filter: Default::default() ,
+            filter: Default::default(),
             next_tick: Instant::now() + duration,
         }
     }
@@ -54,8 +55,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut partial: Vec<String> = vec![];
     let mut parser = ais::AisParser::new();
 
-    for line in std::io::stdin().lines() {
-        let line = line?;
+    let mut line = String::new();
+    let stdin = std::io::stdin();
+    let mut handle = stdin.lock();
+    loop {
+        line.clear();
+        if handle.read_line(&mut line)? == 0 {
+            break;
+        }
         match parser.parse(line.as_bytes(), false) {
             Ok(AisFragments::Complete(c)) => {
                 log::debug!("{c:?}");
@@ -67,17 +74,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 if is_fragment {
                     for p in partial.drain(0..) {
-                        println!("{p}");
+                        println!("{}", p.trim_end());
                     }
                 }
-                println!("{line}");
+                println!("{}", line.trim_end());
             }
             Ok(AisFragments::Incomplete(_)) => {
-                partial.push(line);
+                partial.push(std::mem::take(&mut line));
             }
             Err(e) => {
                 // Log error and reset parser
-                log::error!("{line} -> {e}");
+                log::error!("{} -> {e}", line.trim_end());
                 parser = Default::default();
                 partial.clear();
             }
