@@ -74,7 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(AisFragments::Complete(c)) => {
                 log::debug!("{c:?}");
                 let is_fragment = c.is_fragment();
-                if sample_cfg.as_mut().map_or(false, |s| s.check(c)) {
+                if sample_cfg.as_mut().is_some_and(|s| s.check(c)) {
                     log::debug!("Duplicate message, skipping");
                     partial.clear();
                     continue;
