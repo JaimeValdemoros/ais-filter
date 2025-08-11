@@ -67,6 +67,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if handle.read_line(&mut line)? == 0 {
             break;
         }
+        if line.trim_end().is_empty() {
+            continue;
+        }
         match parser.parse(line.as_bytes(), args.decode) {
             Ok(AisFragments::Complete(c)) => {
                 log::debug!("{c:?}");
