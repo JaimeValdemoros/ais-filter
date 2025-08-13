@@ -50,7 +50,9 @@ impl Sample {
 
 fn write_stdout(lock: &mut std::io::StdoutLock, s: &str) -> std::io::Result<()> {
     use std::io::Write;
-    writeln!(lock, "{s}")
+    lock.write_all(s.as_bytes())?;
+    lock.write_all(b"\n")?;
+    Ok(())
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
