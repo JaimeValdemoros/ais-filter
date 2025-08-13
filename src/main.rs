@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut sample_cfg = args.sample.as_ref().map(Sample::new);
 
-    let mut partial: Vec<String> = vec![];
+    let mut partial: Vec<smallstr::SmallString<[u8; 64]>> = vec![];
     let mut parser = ais::AisParser::new();
 
     let mut line = String::new();
@@ -81,13 +81,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 if is_fragment {
                     for p in partial.drain(0..) {
-                        println!("{}", p.trim_end());
+                        println!("{}", p.as_str().trim_end());
                     }
                 }
                 println!("{}", line.trim_end());
             }
             Ok(AisFragments::Incomplete(_)) => {
-                partial.push(std::mem::take(&mut line));
+                partial.push(line.as_str().into());
             }
             Err(e) => {
                 // Log error and reset parser
