@@ -33,6 +33,7 @@ dependencies = [
  "env_logger",
  "log",
  "smallstr",
+ "smallvec",
 ]
 
 [[package]]

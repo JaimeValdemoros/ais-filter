@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut sample_cfg = args.sample.as_ref().map(Sample::new);
 
-    let mut partial: Vec<smallstr::SmallString<[u8; 64]>> = vec![];
+    let mut partial: smallvec::SmallVec<[smallstr::SmallString<[u8; 64]>; 4]> = Default::default();
     let mut parser = ais::AisParser::new();
 
     let mut line = String::new();
