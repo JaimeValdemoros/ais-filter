@@ -48,6 +48,11 @@ impl Sample {
     }
 }
 
+fn write_stdout(lock: &mut std::io::StdoutLock, s: &str) -> std::io::Result<()> {
+    use std::io::Write;
+    writeln!(lock, "{s}")
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
     env_logger::Builder::new()
@@ -60,11 +65,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut parser = ais::AisParser::new();
 
     let mut line = String::new();
-    let stdin = std::io::stdin();
-    let mut handle = stdin.lock();
+    let mut stdin = std::io::stdin().lock();
+    let mut stdout = std::io::stdout().lock();
     loop {
         line.clear();
-        if handle.read_line(&mut line)? == 0 {
+        if stdin.read_line(&mut line)? == 0 {
             break;
         }
         if line.trim_end().is_empty() {
@@ -81,10 +86,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 if is_fragment {
                     for p in partial.drain(0..) {
-                        println!("{}", p.as_str().trim_end());
+                        write_stdout(&mut stdout, p.as_str().trim_end())?;
                     }
                 }
-                println!("{}", line.trim_end());
+                write_stdout(&mut stdout, line.trim_end())?;
             }
             Ok(AisFragments::Incomplete(_)) => {
                 partial.push(line.as_str().into());
